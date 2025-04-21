@@ -60,4 +60,20 @@ RUN apt-get clean && \
 COPY . /build_tools
 WORKDIR /build_tools
 
-CMD ["/bin/bash"]  # 或你的启动命令
+# 定义构建参数（BRANCH, PLATFORM, HTTP_PROXY, HTTPS_PROXY）
+ARG BRANCH
+ARG PLATFORM
+ARG HTTP_PROXY
+ARG HTTPS_PROXY
+
+# 设置环境变量（包括代理）
+ENV http_proxy=${HTTP_PROXY}
+ENV https_proxy=${HTTPS_PROXY}
+ENV BRANCH=${BRANCH}
+ENV PLATFORM=${PLATFORM}
+
+# 运行自动化脚本
+CMD cd tools/linux && \
+    BRANCH_ARG=${BRANCH:+--branch=$BRANCH} && \
+    PLATFORM_ARG=${PLATFORM:+--platform=$PLATFORM} && \
+    python3 ./automate.py $BRANCH_ARG $PLATFORM_ARG
