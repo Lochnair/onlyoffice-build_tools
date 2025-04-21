@@ -32,7 +32,7 @@ RUN apt-get install -y \
     libtool \
     p7zip-full \
     subversion \
-    libglib2.0-dev \          # Correct package name for glib-2.0-dev
+    libglib2.0-dev \
     libglu1-mesa-dev \
     libgtk-3-dev \
     libpulse-dev \
