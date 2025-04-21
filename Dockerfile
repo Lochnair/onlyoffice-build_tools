@@ -4,6 +4,9 @@ FROM ubuntu:18.04
 ENV TZ=Etc/UTC
 RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 
+ RUN apt-get -o Acquire::https::Verify-Peer=false update && \
+      apt-get -y install ca-certificates
+
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
         ubuntu-standard \
