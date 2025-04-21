@@ -1,25 +1,21 @@
 FROM ubuntu:18.04
 
-# 设置时区
+# Set timezone (non-interactive)
 ENV TZ=Etc/UTC
 RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 
-# 更新软件源并安装基础工具
+# Install basic tools and enable repositories
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
         software-properties-common \
         wget \
         gnupg \
-        ca-certificates \
-        curl \
-        sudo
-
-# 启用所有官方仓库
-RUN add-apt-repository -y universe && \
+        ca-certificates && \
+    add-apt-repository -y universe && \
     add-apt-repository -y multiverse && \
     apt-get update
 
-# 安装 LLVM 12
+# Install LLVM 12
 RUN wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key | apt-key add - && \
     echo "deb http://apt.llvm.org/bionic/ llvm-toolchain-bionic-12 main" > /etc/apt/sources.list.d/llvm.list && \
     apt-get update && \
@@ -28,14 +24,15 @@ RUN wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key | apt-key add - && \
         lld-12 \
         llvm-12
 
-# 安装所有依赖项（修正后的包名）
+# Install dependencies with corrected package names
 RUN apt-get install -y \
     git \
     cmake \
+    curl \
     libtool \
     p7zip-full \
     subversion \
-    libglib2.0-dev \
+    libglib2.0-dev \          # Correct package name for glib-2.0-dev
     libglu1-mesa-dev \
     libgtk-3-dev \
     libpulse-dev \
@@ -50,30 +47,23 @@ RUN apt-get install -y \
     libxi-dev \
     libxrender-dev \
     libxss-dev \
-    autoconf
-
-# 清理缓存
-RUN apt-get clean && \
+    autoconf && \
+    apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
-# 复制代码并运行
+# Install autoconf2.13 manually if needed
+RUN wget http://ftp.gnu.org/gnu/autoconf/autoconf-2.13.tar.gz && \
+    tar -xzf autoconf-2.13.tar.gz && \
+    cd autoconf-2.13 && \
+    ./configure && \
+    make && \
+    make install && \
+    cd .. && \
+    rm -rf autoconf-2.13*
+
+# Copy build tools
 COPY . /build_tools
 WORKDIR /build_tools
 
-# 定义构建参数（BRANCH, PLATFORM, HTTP_PROXY, HTTPS_PROXY）
-ARG BRANCH
-ARG PLATFORM
-ARG HTTP_PROXY
-ARG HTTPS_PROXY
-
-# 设置环境变量（包括代理）
-ENV http_proxy=${HTTP_PROXY}
-ENV https_proxy=${HTTPS_PROXY}
-ENV BRANCH=${BRANCH}
-ENV PLATFORM=${PLATFORM}
-
-# 运行自动化脚本
-CMD cd tools/linux && \
-    BRANCH_ARG=${BRANCH:+--branch=$BRANCH} && \
-    PLATFORM_ARG=${PLATFORM:+--platform=$PLATFORM} && \
-    python3 ./automate.py $BRANCH_ARG $PLATFORM_ARG
+# Use JSON array form for CMD
+CMD ["/bin/bash", "-c", "cd tools/linux && python3 ./automate.py ${BRANCH:+--branch=$BRANCH} ${PLATFORM:+--platform=$PLATFORM}"]
