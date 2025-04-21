@@ -4,6 +4,11 @@ FROM ubuntu:18.04
 ENV TZ=Etc/UTC
 RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 
+# Install sudo and configure passwordless sudo for root
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends sudo && \
+    echo "root ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers
+
 # Install basic tools and enable repositories
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
@@ -16,8 +21,8 @@ RUN apt-get update && \
     apt-get update
 
 # Install LLVM 12
-RUN wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key | apt-key add - && \
-    echo "deb http://apt.llvm.org/bionic/ llvm-toolchain-bionic-12 main" > /etc/apt/sources.list.d/llvm.list && \
+RUN wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key | sudo apt-key add - && \
+    echo "deb http://apt.llvm.org/bionic/ llvm-toolchain-bionic-12 main" | sudo tee /etc/apt/sources.list.d/llvm.list && \
     apt-get update && \
     apt-get install -y --no-install-recommends \
         clang-12 \
@@ -57,7 +62,7 @@ RUN wget http://ftp.gnu.org/gnu/autoconf/autoconf-2.13.tar.gz && \
     cd autoconf-2.13 && \
     ./configure && \
     make && \
-    make install && \
+    sudo make install && \
     cd .. && \
     rm -rf autoconf-2.13*
 
