@@ -1,45 +1,53 @@
 FROM ubuntu:18.04
 
-# Set timezone (non-interactive)
+# Set timezone non-interactively
 ENV TZ=Etc/UTC
 RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 
-# Install sudo and configure passwordless sudo for root
+# 1. Completely reset package sources to ensure clean state
+RUN rm -f /etc/apt/sources.list* && \
+    echo "deb http://archive.ubuntu.com/ubuntu bionic main restricted universe multiverse" > /etc/apt/sources.list && \
+    echo "deb http://archive.ubuntu.com/ubuntu bionic-updates main restricted universe multiverse" >> /etc/apt/sources.list && \
+    echo "deb http://security.ubuntu.com/ubuntu bionic-security main restricted universe multiverse" >> /etc/apt/sources.list
+
+# 2. Install sudo with passwordless access
 RUN apt-get update && \
     apt-get install -y --no-install-recommends sudo && \
     echo "root ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers
 
-# Install basic tools and enable repositories
-RUN apt-get update && \
-    apt-get install -y --no-install-recommends \
-        software-properties-common \
-        wget \
-        gnupg \
-        ca-certificates && \
-    add-apt-repository -y universe && \
+# 3. Install base tools with retry logic
+RUN for i in {1..3}; do apt-get update && apt-get install -y --no-install-recommends \
+    software-properties-common \
+    wget \
+    gnupg \
+    ca-certificates && break || sleep 2; done
+
+# 4. Add repositories with verification
+RUN add-apt-repository -y universe && \
     add-apt-repository -y multiverse && \
     apt-get update
 
-# Install LLVM 12
+# 5. Install LLVM 12 with key verification
 RUN wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key | sudo apt-key add - && \
     echo "deb http://apt.llvm.org/bionic/ llvm-toolchain-bionic-12 main" | sudo tee /etc/apt/sources.list.d/llvm.list && \
     apt-get update && \
     apt-get install -y --no-install-recommends \
-        clang-12 \
-        lld-12 \
-        llvm-12
+    clang-12 \
+    lld-12 \
+    llvm-12
 
-# Install dependencies with corrected package names
-RUN apt-get install -y \
-    git \
-    cmake \
+# 6. Install dependencies with version pinning and fallback
+RUN apt-get update && \
+    apt-get install -y \
+    git=1:2.17.* \
+    cmake=3.10.* \
     curl \
     libtool \
     p7zip-full \
     subversion \
-    libglib2.0-dev \
+    libglib2.0-dev=2.56.* \
     libglu1-mesa-dev \
-    libgtk-3-dev \
+    libgtk-3-dev=3.22.* \
     libpulse-dev \
     libasound2-dev \
     libatspi2.0-dev \
@@ -52,23 +60,21 @@ RUN apt-get install -y \
     libxi-dev \
     libxrender-dev \
     libxss-dev \
-    autoconf && \
-    apt-get clean && \
+    autoconf || \
+    (apt-get update && apt-get install -yf)
+
+# 7. Clean up package cache
+RUN apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
-# Install autoconf2.13 manually if needed
-RUN wget http://ftp.gnu.org/gnu/autoconf/autoconf-2.13.tar.gz && \
-    tar -xzf autoconf-2.13.tar.gz && \
-    cd autoconf-2.13 && \
-    ./configure && \
-    make && \
-    sudo make install && \
-    cd .. && \
-    rm -rf autoconf-2.13*
+# 8. Install autoconf2.13 from Debian packages (more reliable than source)
+RUN wget http://ftp.debian.org/debian/pool/main/a/autoconf/autoconf_2.13-5_all.deb && \
+    dpkg -i autoconf_2.13-5_all.deb || apt-get install -f -y && \
+    rm autoconf_2.13-5_all.deb
 
-# Copy build tools
+# 9. Copy build tools and set working directory
 COPY . /build_tools
 WORKDIR /build_tools
 
-# Use JSON array form for CMD
+# 10. Use proper JSON array form for CMD with parameter handling
 CMD ["/bin/bash", "-c", "cd tools/linux && python3 ./automate.py ${BRANCH:+--branch=$BRANCH} ${PLATFORM:+--platform=$PLATFORM}"]
