@@ -4,8 +4,8 @@ FROM ubuntu:18.04
 ENV TZ=Etc/UTC
 RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 
-# 1. Completely reset package sources to ensure clean state
-RUN rm -f /etc/apt/sources.list* && \
+# 1. Reset package sources (modified to avoid directory removal)
+RUN rm -f /etc/apt/sources.list && \
     echo "deb http://archive.ubuntu.com/ubuntu bionic main restricted universe multiverse" > /etc/apt/sources.list && \
     echo "deb http://archive.ubuntu.com/ubuntu bionic-updates main restricted universe multiverse" >> /etc/apt/sources.list && \
     echo "deb http://security.ubuntu.com/ubuntu bionic-security main restricted universe multiverse" >> /etc/apt/sources.list
@@ -67,7 +67,7 @@ RUN apt-get update && \
 RUN apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
-# 8. Install autoconf2.13 from Debian packages (more reliable than source)
+# 8. Install autoconf2.13 from Debian packages
 RUN wget http://ftp.debian.org/debian/pool/main/a/autoconf/autoconf_2.13-5_all.deb && \
     dpkg -i autoconf_2.13-5_all.deb || apt-get install -f -y && \
     rm autoconf_2.13-5_all.deb
@@ -76,5 +76,5 @@ RUN wget http://ftp.debian.org/debian/pool/main/a/autoconf/autoconf_2.13-5_all.d
 COPY . /build_tools
 WORKDIR /build_tools
 
-# 10. Use proper JSON array form for CMD with parameter handling
+# 10. Use proper JSON array form for CMD
 CMD ["/bin/bash", "-c", "cd tools/linux && python3 ./automate.py ${BRANCH:+--branch=$BRANCH} ${PLATFORM:+--platform=$PLATFORM}"]
