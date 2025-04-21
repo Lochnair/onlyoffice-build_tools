@@ -1,60 +1,63 @@
 FROM ubuntu:18.04
 
-# 设置时区（避免交互式提示）
+# 设置时区
 ENV TZ=Etc/UTC
 RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 
-# 更新并安装基础工具
+# 更新软件源并安装基础工具
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
-        ca-certificates \
-        wget \
-        sudo \
-        lsb-release \
         software-properties-common \
+        wget \
         gnupg \
-        python \
-        python3 \
-        build-essential \
-        x11-utils && \
-    rm -rf /var/lib/apt/lists/*
+        ca-certificates \
+        curl \
+        sudo
 
-# 添加 Universe 仓库（Ubuntu 18.04 默认可能未启用）
-RUN add-apt-repository universe
+# 启用所有官方仓库
+RUN add-apt-repository -y universe && \
+    add-apt-repository -y multiverse && \
+    apt-get update
 
-# 添加 LLVM 12 的官方源（适用于 Ubuntu 18.04 "Bionic"）
+# 安装 LLVM 12
 RUN wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key | apt-key add - && \
-    echo "deb http://apt.llvm.org/bionic/ llvm-toolchain-bionic-12 main" > /etc/apt/sources.list.d/llvm.list
-
-# 安装 LLVM/Clang 12
-RUN apt-get update && \
+    echo "deb http://apt.llvm.org/bionic/ llvm-toolchain-bionic-12 main" > /etc/apt/sources.list.d/llvm.list && \
+    apt-get update && \
     apt-get install -y --no-install-recommends \
         clang-12 \
         lld-12 \
-        llvm-12 && \
+        llvm-12
+
+# 安装所有依赖项（修正后的包名）
+RUN apt-get install -y \
+    git \
+    cmake \
+    libtool \
+    p7zip-full \
+    subversion \
+    libglib2.0-dev \
+    libglu1-mesa-dev \
+    libgtk-3-dev \
+    libpulse-dev \
+    libasound2-dev \
+    libatspi2.0-dev \
+    libcups2-dev \
+    libdbus-1-dev \
+    libicu-dev \
+    libgstreamer1.0-dev \
+    libgstreamer-plugins-base1.0-dev \
+    libx11-xcb-dev \
+    libxi-dev \
+    libxrender-dev \
+    libxss-dev \
+    autoconf
+
+# 清理缓存
+RUN apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
-# 确保 Python 2 是默认的（兼容旧脚本）
-RUN rm -f /usr/bin/python && ln -s /usr/bin/python2 /usr/bin/python
-
-# 复制本地文件到容器
+# 复制代码并运行
 COPY . /build_tools
 WORKDIR /build_tools
 
-# 定义构建参数（BRANCH, PLATFORM, HTTP_PROXY, HTTPS_PROXY）
-ARG BRANCH
-ARG PLATFORM
-ARG HTTP_PROXY
-ARG HTTPS_PROXY
-
-# 设置环境变量（包括代理）
-ENV http_proxy=${HTTP_PROXY}
-ENV https_proxy=${HTTPS_PROXY}
-ENV BRANCH=${BRANCH}
-ENV PLATFORM=${PLATFORM}
-
-# 运行自动化脚本
-CMD cd tools/linux && \
-    BRANCH_ARG=${BRANCH:+--branch=$BRANCH} && \
-    PLATFORM_ARG=${PLATFORM:+--platform=$PLATFORM} && \
-    python3 ./automate.py $BRANCH_ARG $PLATFORM_ARG
+CMD ["/bin/bash"]  # 或你的启动命令
