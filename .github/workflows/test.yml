@@ -1,4 +1,4 @@
-name: Build OnlyOffice Arm Ver
+name: test builder
 
 on:
   push:
