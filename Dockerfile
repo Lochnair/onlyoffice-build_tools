@@ -4,10 +4,6 @@ FROM ubuntu:18.04
 ENV TZ=Etc/UTC
 RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 
-# 工作目录
-ADD . /build_tools
-WORKDIR /build_tools
-
 # 启用 universe 仓库并安装基础工具
 RUN apt-get update && \
     apt-get install -y software-properties-common ca-certificates && \
@@ -27,9 +23,10 @@ RUN apt-get update && \
     libx11-xcb-dev libxcb1-dev libxi-dev libxrender-dev libxss-dev && \
     rm -rf /var/lib/apt/lists/*
 
-# 设置 Python 链接
-RUN rm /usr/bin/python && ln -s /usr/bin/python2 /usr/bin/python
-RUN cd tools/linux && python3 ./deps.py
+RUN curl -fsSL https://deb.nodesource.com/setup_16.x | bash - && \
+    apt-get install -y nodejs npm yarn && \
+    npm install -g grunt-cli pkg && \
+    rm -rf /var/lib/apt/lists/*
 
 # 添加 LLVM 仓库并安装 clang-12
 RUN wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key | apt-key add - && \
@@ -38,6 +35,12 @@ RUN wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key | apt-key add - && \
     apt-get install -y clang-12 lld-12 llvm-12 && \
     rm -rf /var/lib/apt/lists/*
 
+
+# 工作目录
+ADD . /build_tools
+WORKDIR /build_tools
+# 设置 Python 链接
+RUN rm /usr/bin/python && ln -s /usr/bin/python2 /usr/bin/python
 
 
 # 构建参数
