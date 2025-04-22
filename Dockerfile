@@ -31,8 +31,8 @@ RUN apt-get update && \
 
 # 设置 Python 链接
 RUN rm /usr/bin/python && ln -s /usr/bin/python2 /usr/bin/python
-
-RUN python ./deps.py
+RUN cd tools/linux
+RUN python /deps.py
 
 # 添加 LLVM 仓库并安装 clang-12
 RUN wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key | apt-key add - && \
@@ -55,8 +55,7 @@ ENV BRANCH=${BRANCH}
 ENV PLATFORM=${PLATFORM}
 
 # 执行构建命令
-CMD cd tools/linux && \
-    if [ -n "$BRANCH" ]; then \
+CMD if [ -n "$BRANCH" ]; then \
         BRANCH_ARG="--branch=${BRANCH}"; \
     else \
         BRANCH_ARG=""; \
