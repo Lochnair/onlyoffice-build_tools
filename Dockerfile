@@ -1,18 +1,5 @@
 FROM ubuntu:18.04
 
-# 设置软件源（使用官方 Ubuntu 源）
-RUN if [ "$(uname -m)" = "aarch64" ]; then \
-        echo "deb http://ports.ubuntu.com/ubuntu-ports/ bionic main restricted universe multiverse" > /etc/apt/sources.list && \
-        echo "deb http://ports.ubuntu.com/ubuntu-ports/ bionic-updates main restricted universe multiverse" >> /etc/apt/sources.list && \
-        echo "deb http://ports.ubuntu.com/ubuntu-ports/ bionic-backports main restricted universe multiverse" >> /etc/apt/sources.list && \
-        echo "deb http://ports.ubuntu.com/ubuntu-ports/ bionic-security main restricted universe multiverse" >> /etc/apt/sources.list; \
-    else \
-        echo "deb http://archive.ubuntu.com/ubuntu/ bionic main restricted universe multiverse" > /etc/apt/sources.list && \
-        echo "deb http://archive.ubuntu.com/ubuntu/ bionic-updates main restricted universe multiverse" >> /etc/apt/sources.list && \
-        echo "deb http://archive.ubuntu.com/ubuntu/ bionic-backports main restricted universe multiverse" >> /etc/apt/sources.list && \
-        echo "deb http://security.ubuntu.com/ubuntu/ bionic-security main restricted universe multiverse" >> /etc/apt/sources.list; \
-    fi
-
 # 设置时区
 ENV TZ=Etc/UTC
 RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
