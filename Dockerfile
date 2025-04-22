@@ -24,8 +24,8 @@ RUN apt-get update && \
     rm -rf /var/lib/apt/lists/*
 
 RUN curl -fsSL https://deb.nodesource.com/setup_16.x | bash - && \
-    apt-get install -y nodejs npm yarn && \
-    npm install -g grunt-cli pkg && \
+    apt-get install -y nodejs && \
+    npm install -g npm yarn grunt-cli pkg && \
     rm -rf /var/lib/apt/lists/*
 
 # 添加 LLVM 仓库并安装 clang-12
