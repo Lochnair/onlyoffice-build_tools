@@ -27,6 +27,18 @@ RUN apt-get update && \
     add-apt-repository universe && \
     apt-get update && \
     apt-get install -y python python3 wget sudo lsb-release gnupg && \
+    curl -sL https://deb.nodesource.com/setup_10.x | bash - && \
+    rm -rf /var/lib/apt/lists/*
+
+# 在 deps.py 之前安装依赖
+RUN apt-get update && \
+    apt-get install -y \
+    autoconf build-essential cmake curl git \
+    libglib2.0-dev libglu1-mesa-dev libgtk-3-dev libpulse-dev \
+    libtool p7zip-full subversion libasound2-dev libatspi2.0-dev \
+    libcups2-dev libdbus-1-dev libicu-dev \
+    libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev \
+    libx11-xcb-dev libxcb1-dev libxi-dev libxrender-dev libxss-dev && \
     rm -rf /var/lib/apt/lists/*
 
 # 设置 Python 链接
