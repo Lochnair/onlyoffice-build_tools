@@ -25,8 +25,8 @@ jobs:
         git clone --branch ${{ github.ref_name }} https://github.com/fernfei/build_tools.git
         cd build_tools/tools/linux/
         apt-get update && apt-get install -y python python3 
-        rm /usr/bin/python && ln -s /usr/bin/python2 /usr/bin/python
-        python3 ./deps.py
+        sudo rm /usr/bin/python && ln -s /usr/bin/python2 /usr/bin/python
+        sudo python3 ./deps.py
         
 
     - name: Package deb
