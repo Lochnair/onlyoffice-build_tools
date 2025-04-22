@@ -1,0 +1,25 @@
+name: test builder
+
+on:
+  push:
+    branches:
+      - release/v8.1.0
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04-arm
+  
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+        
+    - name: Build project
+      id: build_step
+      run: |
+        git clone --branch ${{ github.ref_name }} https://github.com/fernfei/build_tools.git
+        cd build_tools/tools/linux/
+        sudo apt-get update && sudo apt-get install -y python python3 
+        sudo rm /usr/bin/python && sudo ln -s /usr/bin/python2 /usr/bin/python
+        sudo python3 ./deps.py
+
