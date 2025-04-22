@@ -3,7 +3,7 @@ name: Build OnlyOffice Arm Ver
 on:
   push:
     branches:
-      - release/v8.1.0
+      - ${{ github.ref_name }}
   workflow_dispatch:
 
 jobs:
