@@ -27,7 +27,6 @@ RUN apt-get update && \
     add-apt-repository universe && \
     apt-get update && \
     apt-get install -y python python3 wget sudo lsb-release gnupg && \
-    curl -sL https://deb.nodesource.com/setup_10.x | bash - && \
     rm -rf /var/lib/apt/lists/*
 
 # 在 deps.py 之前安装依赖
