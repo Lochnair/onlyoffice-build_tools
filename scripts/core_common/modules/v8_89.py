@@ -109,22 +109,7 @@ def is_package_installed(package_name):
   out, err = process.communicate()
   return process.returncode == 0
 def install_clang():
-    # Check if the packages are already installed
-    packages = ["clang-12", "lld-12", "x11-utils", "llvm-12"]
-    if all(is_package_installed(pkg) for pkg in packages):
-        print("clang-12, lld-12, x11-utils, llvm-12 required packages are already installed.")
-        for binary in binaries:
-            create_symlink("/usr/bin/" + binary + "-12", "/usr/bin/" + binary)
-        return True
-    print("Clang++ Installing...")
-    try:
-        # see website how config https://apt.llvm.org/
-        subprocess.check_call("wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key | sudo apt-key add -", shell=True)
-        subprocess.check_call("echo \"deb http://apt.llvm.org/bionic/ llvm-toolchain-bionic-12 main\" | sudo tee /etc/apt/sources.list.d/llvm.list",shell=True)
-        subprocess.check_call(["sudo", "apt-get", "update"])
-        subprocess.check_call(["sudo", "apt-get", "install", "-y", "clang-12", "lld-12", "x11-utils", "llvm-12"])
-        
-        binaries = [
+    binaries = [
             "clang", "clang-cpp", "clang++", "dsymutil", "llc", "lli", "lli-child-target",
             "llvm-PerfectShuffle", "llvm-addr2line", "llvm-ar", "llvm-as", "llvm-bcanalyzer",
             "llvm-c-test", "llvm-cat", "llvm-cfi-verify", "llvm-config", "llvm-cov",
@@ -140,6 +125,20 @@ def install_clang():
             "opt", "verify-uselistorder", "sanstats", "yaml-bench", "yaml2obj", "ld.lld",
             "lld", "ld64.lld", "lld-link"
         ]
+    # Check if the packages are already installed
+    packages = ["clang-12", "lld-12", "x11-utils", "llvm-12"]
+    if all(is_package_installed(pkg) for pkg in packages):
+        print("clang-12, lld-12, x11-utils, llvm-12 required packages are already installed.")
+        for binary in binaries:
+            create_symlink("/usr/bin/" + binary + "-12", "/usr/bin/" + binary)
+        return True
+    print("Clang++ Installing...")
+    try:
+        # see website how config https://apt.llvm.org/
+        subprocess.check_call("wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key | sudo apt-key add -", shell=True)
+        subprocess.check_call("echo \"deb http://apt.llvm.org/bionic/ llvm-toolchain-bionic-12 main\" | sudo tee /etc/apt/sources.list.d/llvm.list",shell=True)
+        subprocess.check_call(["sudo", "apt-get", "update"])
+        subprocess.check_call(["sudo", "apt-get", "install", "-y", "clang-12", "lld-12", "x11-utils", "llvm-12"])
         
         for binary in binaries:
             create_symlink("/usr/bin/" + binary + "-12", "/usr/bin/" + binary)
