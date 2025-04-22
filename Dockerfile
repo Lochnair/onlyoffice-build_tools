@@ -17,6 +17,10 @@ RUN if [ "$(uname -m)" = "aarch64" ]; then \
 ENV TZ=Etc/UTC
 RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 
+# 工作目录
+ADD . /build_tools
+WORKDIR /build_tools
+
 # 启用 universe 仓库并安装基础工具
 RUN apt-get update && \
     apt-get install -y software-properties-common ca-certificates && \
@@ -25,20 +29,10 @@ RUN apt-get update && \
     apt-get install -y python python3 wget sudo lsb-release gnupg && \
     rm -rf /var/lib/apt/lists/*
 
-# 单独安装 libglib2.0-dev
-RUN apt-get update && apt-get install -y libglib2.0-dev && rm -rf /var/lib/apt/lists/*
+# 设置 Python 链接
+RUN rm /usr/bin/python && ln -s /usr/bin/python2 /usr/bin/python
 
-# 安装其他开发依赖
-RUN apt-get update && \
-    apt-get install -y \
-    autoconf2.13 cmake curl git libtool \
-    libglu1-mesa-dev libgtk-3-dev libpulse-dev \
-    p7zip-full subversion libasound2-dev libatspi2.0-dev \
-    libcups2-dev libdbus-1-dev \
-    libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev \
-    libx11-xcb-dev libxi-dev libxrender-dev libxss1 || \
-    { echo "Failed package installation"; apt-cache search glib-2.0-dev; exit 1; } && \
-    rm -rf /var/lib/apt/lists/*
+RUN python ./deps.py
 
 # 添加 LLVM 仓库并安装 clang-12
 RUN wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key | apt-key add - && \
@@ -47,12 +41,7 @@ RUN wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key | apt-key add - && \
     apt-get install -y clang-12 lld-12 llvm-12 && \
     rm -rf /var/lib/apt/lists/*
 
-# 设置 Python 链接
-RUN rm /usr/bin/python && ln -s /usr/bin/python2 /usr/bin/python
 
-# 工作目录
-ADD . /build_tools
-WORKDIR /build_tools
 
 # 构建参数
 ARG BRANCH
