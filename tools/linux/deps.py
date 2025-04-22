@@ -18,7 +18,7 @@ def install_deps():
               "cmake",
               "curl",
               "git",
-              "glib-2.0-dev",
+              "libglib2.0-dev",
               "libglu1-mesa-dev",
               "libgtk-3-dev",
               "libpulse-dev",
