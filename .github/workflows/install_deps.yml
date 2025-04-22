@@ -19,6 +19,15 @@ jobs:
       run: |
         git clone --branch ${{ github.ref_name }} https://github.com/fernfei/build_tools.git
         cd build_tools/tools/linux/
-        sudo apt-get update && sudo apt-get install -y python-is-python3 python3 
+        sudo apt update
+        sudo apt install -y wget build-essential zlib1g-dev libssl-dev libffi-dev  # 依赖项
+        wget https://www.python.org/ftp/python/2.7.18/Python-2.7.18.tgz
+        tar -xzf Python-2.7.18.tgz
+        cd Python-2.7.18
+        ./configure --enable-optimizations
+        make -j$(nproc)
+        sudo make install
+        sudo apt-get update && sudo apt-get install -y python3 
+        sudo rm /usr/bin/python && sudo ln -s /usr/bin/python2.7 /usr/bin/python
         sudo python3 ./deps.py
 
