@@ -30,5 +30,5 @@ jobs:
         sudo apt-get update && sudo apt-get install -y python3 
         sudo rm /usr/bin/python && sudo ln -s /usr/bin/python2.7 /usr/bin/python
         cd ../
-        sudo python3 ./deps.py
+        sudo python ./deps.py
 
