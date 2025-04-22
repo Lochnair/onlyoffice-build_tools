@@ -32,7 +32,7 @@ RUN apt-get update && \
 # 设置 Python 链接
 RUN rm /usr/bin/python && ln -s /usr/bin/python2 /usr/bin/python
 RUN cd tools/linux
-RUN python /deps.py
+RUN python ./deps.py
 
 # 添加 LLVM 仓库并安装 clang-12
 RUN wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key | apt-key add - && \
