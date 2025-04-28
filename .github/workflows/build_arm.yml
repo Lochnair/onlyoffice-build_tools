@@ -3,7 +3,7 @@ name: Build OnlyOffice Arm Ver
 on:
   push:
     branches:
-      - release/v8.1.0
+      - release/v8.3.0
   workflow_dispatch:
 
 jobs:
@@ -35,12 +35,17 @@ jobs:
         # 使用 shell 变量替换 'v'
         VERSION=$(echo ${{ github.ref_name }} | sed 's/^v//')
         PRODUCT_VERSION=$VERSION BUILD_NUMBER='1' make deb
+    - name: Package rpm
+      run: |
+        PRODUCT_VERSION=$VERSION BUILD_NUMBER='1' make rpm
 
     - name: Upload artifact
       uses: actions/upload-artifact@v4
       with:
         name: compiled-files
-        path: document-server-package/deb/
+        path: |
+          document-server-package/deb/
+          document-server-package/rpm/
 
   release:
     runs-on: ubuntu-latest
