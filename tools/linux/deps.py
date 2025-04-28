@@ -41,7 +41,8 @@ def install_deps():
               "libxss-dev",
               "libncurses5"]
 
-  base.cmd("sudo", ["apt-get", "install", "-y"] + packages)
+  for package in packages:
+    base.cmd("sudo", ["apt-get", "install", "-y", package], True)
 
   # nodejs
   base.cmd("sudo", ["apt-get", "install", "-y", "nodejs"])
@@ -79,4 +80,3 @@ def install_deps():
 
 if __name__ == "__main__":
   install_deps()
-
